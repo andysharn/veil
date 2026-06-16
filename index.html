@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Veil — Connect anonymously. Reveal intentionally.</title>
+<meta name="description" content="Veil is an anonymous, intent-based matchmaking platform. Get paired on shared interests, chat for 7 days, then reveal — only if you both choose to." />
+<style>
+  :root {
+    --bg: #07060f;
+    --bg-2: #0d0b1c;
+    --surface: rgba(255, 255, 255, 0.04);
+    --surface-strong: rgba(255, 255, 255, 0.07);
+    --border: rgba(255, 255, 255, 0.09);
+    --border-strong: rgba(255, 255, 255, 0.16);
+    --text: #f4f2ff;
+    --text-dim: #a9a4c9;
+    --text-faint: #6f6a8d;
+    --violet: #8b5cf6;
+    --indigo: #6366f1;
+    --teal: #2dd4bf;
+    --pink: #ec4899;
+    --grad: linear-gradient(120deg, #8b5cf6 0%, #6366f1 45%, #2dd4bf 100%);
+    --grad-soft: linear-gradient(120deg, rgba(139,92,246,0.18), rgba(45,212,191,0.14));
+    --radius: 20px;
+    --shadow: 0 30px 80px -30px rgba(99, 102, 241, 0.45);
+    --max: 1180px;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Ambient gradient blobs */
+  .bg-aura {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .bg-aura::before,
+  .bg-aura::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(110px);
+    opacity: 0.5;
+  }
+  .bg-aura::before {
+    width: 620px; height: 620px;
+    background: radial-gradient(circle, #6d28d9, transparent 70%);
+    top: -240px; left: -160px;
+    animation: drift1 22s var(--ease) infinite alternate;
+  }
+  .bg-aura::after {
+    width: 560px; height: 560px;
+    background: radial-gradient(circle, #0d9488, transparent 70%);
+    bottom: -220px; right: -160px;
+    animation: drift2 26s var(--ease) infinite alternate;
+  }
+  @keyframes drift1 { to { transform: translate(120px, 100px) scale(1.15); } }
+  @keyframes drift2 { to { transform: translate(-120px, -90px) scale(1.1); } }
+
+  .grain {
+    position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .wrap { width: 100%; max-width: var(--max); margin: 0 auto; padding: 0 24px; }
+
+  a { color: inherit; text-decoration: none; }
+
+  .grad-text {
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    display: inline-flex; align-items: center; gap: 9px;
+    font-weight: 600; font-size: 0.98rem;
+    padding: 14px 26px; border-radius: 999px;
+    border: 1px solid transparent; cursor: pointer;
+    transition: transform .25s var(--ease), box-shadow .25s var(--ease), background .25s;
+    white-space: nowrap;
+  }
+  .btn-primary {
+    background: var(--grad); color: #0a0814;
+    box-shadow: 0 12px 35px -10px rgba(139,92,246,0.7);
+  }
+  .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 20px 45px -12px rgba(139,92,246,0.85); }
+  .btn-ghost {
+    background: var(--surface); color: var(--text);
+    border-color: var(--border-strong); backdrop-filter: blur(10px);
+  }
+  .btn-ghost:hover { transform: translateY(-3px); background: var(--surface-strong); }
+
+  /* ---------- Nav ---------- */
+  header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    transition: background .3s, border-color .3s, backdrop-filter .3s;
+    border-bottom: 1px solid transparent;
+  }
+  header.scrolled {
+    background: rgba(7,6,15,0.72);
+    backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--border);
+  }
+  nav { display: flex; align-items: center; justify-content: space-between; height: 72px; }
+  .logo { display: flex; align-items: center; gap: 11px; font-weight: 700; font-size: 1.28rem; letter-spacing: -0.02em; }
+  .logo-mark {
+    width: 34px; height: 34px; border-radius: 11px; background: var(--grad);
+    display: grid; place-items: center; box-shadow: 0 6px 18px -6px rgba(139,92,246,0.8);
+    position: relative;
+  }
+  .logo-mark svg { width: 19px; height: 19px; }
+  .nav-links { display: flex; gap: 30px; align-items: center; }
+  .nav-links a { color: var(--text-dim); font-size: 0.94rem; font-weight: 500; transition: color .2s; }
+  .nav-links a:hover { color: var(--text); }
+  .nav-cta { display: flex; align-items: center; gap: 14px; }
+  .menu-toggle { display: none; background: none; border: none; color: var(--text); cursor: pointer; }
+
+  /* ---------- Hero ---------- */
+  .hero { position: relative; padding: 170px 0 110px; text-align: center; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 9px;
+    padding: 7px 16px 7px 9px; border-radius: 999px;
+    background: var(--surface); border: 1px solid var(--border-strong);
+    font-size: 0.82rem; color: var(--text-dim); backdrop-filter: blur(10px); margin-bottom: 30px;
+  }
+  .pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); box-shadow: 0 0 0 4px rgba(45,212,191,0.18); animation: pulse 2.4s infinite; }
+  .pill b { color: var(--text); font-weight: 600; }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 8px rgba(45,212,191,0); } }
+
+  .hero h1 {
+    font-size: clamp(2.6rem, 6.2vw, 5rem); line-height: 1.04; letter-spacing: -0.03em;
+    font-weight: 800; margin-bottom: 24px;
+  }
+  .hero p.sub {
+    font-size: clamp(1.05rem, 2.1vw, 1.32rem); color: var(--text-dim);
+    max-width: 640px; margin: 0 auto 38px;
+  }
+  .hero-cta { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+  .hero-stats { display: flex; gap: 44px; justify-content: center; margin-top: 64px; flex-wrap: wrap; }
+  .hero-stats .stat { text-align: center; }
+  .hero-stats .num { font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; }
+  .hero-stats .lbl { font-size: 0.84rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  /* Floating match cards in hero */
+  .hero-orbit { position: relative; max-width: 760px; margin: 70px auto 0; height: 220px; }
+  .float-card {
+    position: absolute; padding: 16px 18px; border-radius: 16px;
+    background: var(--surface-strong); border: 1px solid var(--border);
+    backdrop-filter: blur(14px); box-shadow: var(--shadow);
+    display: flex; align-items: center; gap: 12px; font-size: 0.9rem;
+    animation: floaty 6s var(--ease) infinite alternate;
+  }
+  .float-card .av { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; flex-shrink: 0; }
+  .float-card small { color: var(--text-faint); display: block; font-size: 0.76rem; }
+  .fc-1 { top: 0; left: 2%; animation-delay: 0s; }
+  .fc-2 { top: 30%; right: 0; animation-delay: 1.2s; }
+  .fc-3 { bottom: 0; left: 24%; animation-delay: 2.1s; }
+  @keyframes floaty { to { transform: translateY(-18px); } }
+
+  /* ---------- Section shell ---------- */
+  section { position: relative; padding: 100px 0; }
+  .sec-head { text-align: center; max-width: 660px; margin: 0 auto 60px; }
+  .sec-tag {
+    display: inline-block; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--violet); margin-bottom: 14px;
+  }
+  .sec-head h2 { font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -0.025em; line-height: 1.1; font-weight: 800; }
+  .sec-head p { color: var(--text-dim); font-size: 1.08rem; margin-top: 16px; }
+
+  /* glass card */
+  .glass {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); backdrop-filter: blur(16px);
+    transition: transform .35s var(--ease), border-color .35s, background .35s;
+  }
+  .glass:hover { transform: translateY(-6px); border-color: var(--border-strong); background: var(--surface-strong); }
+
+  /* ---------- How it works ---------- */
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+  .step { padding: 30px 26px; position: relative; }
+  .step .idx {
+    font-size: 0.85rem; font-weight: 700; width: 40px; height: 40px; border-radius: 12px;
+    display: grid; place-items: center; background: var(--grad-soft); border: 1px solid var(--border-strong);
+    color: var(--text); margin-bottom: 22px;
+  }
+  .step h3 { font-size: 1.18rem; margin-bottom: 9px; letter-spacing: -0.01em; }
+  .step p { color: var(--text-dim); font-size: 0.95rem; }
+  .step .arrow { position: absolute; top: 46px; right: -16px; color: var(--text-faint); z-index: 2; }
+
+  /* ---------- Connection types ---------- */
+  .types-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+  .type-card { padding: 30px 28px; }
+  .type-icon {
+    width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center;
+    margin-bottom: 22px; position: relative;
+  }
+  .type-icon svg { width: 27px; height: 27px; }
+  .type-card h3 { font-size: 1.25rem; margin-bottom: 8px; letter-spacing: -0.01em; }
+  .type-card p { color: var(--text-dim); font-size: 0.95rem; }
+  .type-card .tag-list { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .type-card .tag-list span { font-size: 0.76rem; padding: 4px 11px; border-radius: 999px; background: var(--surface-strong); border: 1px solid var(--border); color: var(--text-dim); }
+
+  /* ---------- Features (anonymous + onboarding) ---------- */
+  .feature-split { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; align-items: stretch; }
+  .feature-block { padding: 40px; }
+  .feature-block .fi {
+    width: 50px; height: 50px; border-radius: 14px; display: grid; place-items: center; margin-bottom: 22px;
+    background: var(--grad-soft); border: 1px solid var(--border-strong);
+  }
+  .feature-block .fi svg { width: 24px; height: 24px; }
+  .feature-block h3 { font-size: 1.5rem; letter-spacing: -0.02em; margin-bottom: 12px; }
+  .feature-block p { color: var(--text-dim); }
+  .feature-list { margin-top: 22px; display: grid; gap: 14px; }
+  .feature-list .li { display: flex; gap: 12px; align-items: flex-start; font-size: 0.95rem; color: var(--text-dim); }
+  .feature-list .li .ck {
+    flex-shrink: 0; width: 22px; height: 22px; border-radius: 7px; background: rgba(45,212,191,0.15);
+    border: 1px solid rgba(45,212,191,0.4); display: grid; place-items: center; margin-top: 2px;
+  }
+  .feature-list .li .ck svg { width: 12px; height: 12px; color: var(--teal); }
+
+  /* onboarding layers visual */
+  .onboard-layers { display: grid; gap: 14px; margin-top: 10px; }
+  .layer {
+    padding: 18px 20px; border-radius: 14px; background: var(--surface-strong);
+    border: 1px solid var(--border); position: relative; overflow: hidden;
+  }
+  .layer::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--grad); }
+  .layer h4 { font-size: 1rem; margin-bottom: 4px; }
+  .layer p { font-size: 0.86rem; color: var(--text-faint); }
+
+  /* ---------- Icebreaker carousel ---------- */
+  .ib { max-width: 880px; margin: 0 auto; }
+  .ib-days { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 36px; }
+  .ib-day {
+    padding: 9px 17px; border-radius: 999px; cursor: pointer; font-size: 0.9rem; font-weight: 600;
+    background: var(--surface); border: 1px solid var(--border); color: var(--text-dim);
+    transition: all .25s var(--ease);
+  }
+  .ib-day:hover { border-color: var(--border-strong); color: var(--text); }
+  .ib-day.active { background: var(--grad); color: #0a0814; border-color: transparent; box-shadow: 0 8px 22px -8px rgba(139,92,246,0.7); }
+
+  .ib-stage { position: relative; }
+  .ib-card {
+    padding: 44px; border-radius: 24px; text-align: center;
+    background: var(--surface-strong); border: 1px solid var(--border-strong);
+    backdrop-filter: blur(18px); min-height: 270px;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+  }
+  .ib-progress {
+    width: 100%; max-width: 340px; height: 6px; border-radius: 999px; background: var(--surface);
+    margin: 0 auto 26px; overflow: hidden; border: 1px solid var(--border);
+  }
+  .ib-progress span { display: block; height: 100%; background: var(--grad); border-radius: 999px; transition: width .5s var(--ease); }
+  .ib-theme { font-size: 0.82rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; margin-bottom: 18px; }
+  .ib-prompt { font-size: clamp(1.3rem, 3vw, 1.9rem); font-weight: 700; letter-spacing: -0.02em; max-width: 600px; line-height: 1.3; }
+  .ib-meta { margin-top: 22px; font-size: 0.9rem; color: var(--text-faint); display: flex; gap: 8px; align-items: center; }
+  .ib-fade { animation: ibIn .45s var(--ease); }
+  @keyframes ibIn { from { opacity: 0; transform: translateY(14px); } }
+  .ib-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 26px; }
+  .ib-arrow {
+    width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; cursor: pointer;
+    background: var(--surface); border: 1px solid var(--border-strong); color: var(--text); transition: all .25s;
+  }
+  .ib-arrow:hover { background: var(--surface-strong); transform: scale(1.08); }
+  .ib-counter { font-size: 0.92rem; color: var(--text-faint); }
+
+  /* ---------- Safety ---------- */
+  .safety { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 40px; align-items: center; }
+  .safety-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .safety-item { padding: 22px; }
+  .safety-item .si { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; margin-bottom: 14px; background: var(--grad-soft); border: 1px solid var(--border); }
+  .safety-item .si svg { width: 21px; height: 21px; }
+  .safety-item h4 { font-size: 1.02rem; margin-bottom: 5px; }
+  .safety-item p { font-size: 0.86rem; color: var(--text-dim); }
+
+  /* phone chat mock */
+  .chat-mock {
+    border-radius: 30px; padding: 22px 18px; background: linear-gradient(180deg, rgba(20,17,38,0.9), rgba(10,8,22,0.95));
+    border: 1px solid var(--border-strong); box-shadow: var(--shadow); max-width: 380px; margin: 0 auto; width: 100%;
+  }
+  .chat-head { display: flex; align-items: center; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  .chat-head .av { width: 40px; height: 40px; border-radius: 50%; background: var(--grad); display: grid; place-items: center; font-weight: 700; color: #0a0814; }
+  .chat-head .meta b { font-size: 0.96rem; }
+  .chat-head .meta small { color: var(--teal); font-size: 0.78rem; }
+  .chat-head .timer { margin-left: auto; font-size: 0.78rem; color: var(--text-faint); background: var(--surface); padding: 5px 11px; border-radius: 999px; border: 1px solid var(--border); }
+  .bubble { padding: 11px 15px; border-radius: 16px; font-size: 0.9rem; margin-bottom: 10px; max-width: 80%; }
+  .bubble.them { background: var(--surface-strong); border: 1px solid var(--border); border-bottom-left-radius: 5px; }
+  .bubble.me { background: var(--grad); color: #0a0814; margin-left: auto; border-bottom-right-radius: 5px; font-weight: 500; }
+  .bot-note {
+    display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 14px;
+    background: rgba(45,212,191,0.08); border: 1px solid rgba(45,212,191,0.28); font-size: 0.82rem; color: var(--text-dim);
+  }
+  .bot-note .bicon { flex-shrink: 0; width: 24px; height: 24px; border-radius: 8px; background: rgba(45,212,191,0.2); display: grid; place-items: center; }
+  .bot-note .bicon svg { width: 13px; height: 13px; color: var(--teal); }
+  .bot-note b { color: var(--teal); }
+
+  /* ---------- Why us / comparison ---------- */
+  .compare { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--border); }
+  table.cmp { width: 100%; border-collapse: collapse; min-width: 640px; }
+  table.cmp th, table.cmp td { padding: 18px 20px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+  table.cmp thead th { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-faint); font-weight: 600; }
+  table.cmp thead th.us { color: var(--text); }
+  table.cmp .us-col { background: var(--grad-soft); }
+  table.cmp td.feat { color: var(--text-dim); font-weight: 500; }
+  table.cmp tbody tr:last-child td { border-bottom: none; }
+  .yes { color: var(--teal); font-weight: 700; }
+  .no { color: var(--text-faint); }
+  .cmp-logo { font-weight: 800; }
+
+  /* ---------- Waitlist ---------- */
+  .waitlist-card {
+    padding: 60px 40px; border-radius: 28px; text-align: center; position: relative; overflow: hidden;
+    background: var(--surface-strong); border: 1px solid var(--border-strong); backdrop-filter: blur(18px);
+  }
+  .waitlist-card::before {
+    content: ""; position: absolute; inset: 0; z-index: -1; opacity: 0.5;
+    background: radial-gradient(circle at 50% 0%, rgba(139,92,246,0.3), transparent 60%);
+  }
+  .waitlist-card h2 { font-size: clamp(2rem, 4vw, 2.9rem); letter-spacing: -0.025em; margin-bottom: 14px; }
+  .waitlist-card p { color: var(--text-dim); max-width: 480px; margin: 0 auto 32px; font-size: 1.05rem; }
+  .signup-form { display: flex; gap: 12px; max-width: 480px; margin: 0 auto; }
+  .signup-form input {
+    flex: 1; padding: 15px 20px; border-radius: 999px; background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border-strong); color: var(--text); font-size: 1rem; outline: none; transition: border-color .2s;
+  }
+  .signup-form input:focus { border-color: var(--violet); }
+  .signup-form input::placeholder { color: var(--text-faint); }
+  .form-note { margin-top: 16px; font-size: 0.84rem; color: var(--text-faint); }
+  .success-msg {
+    display: none; margin: 0 auto; max-width: 480px; padding: 18px 24px; border-radius: 16px;
+    background: rgba(45,212,191,0.1); border: 1px solid rgba(45,212,191,0.35); color: var(--teal); font-weight: 500;
+  }
+  .success-msg.show { display: block; animation: ibIn .4s var(--ease); }
+
+  .intent-chips { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 30px; }
+  .intent-chips .ic {
+    font-size: 0.84rem; padding: 7px 15px; border-radius: 999px; cursor: pointer;
+    background: var(--surface); border: 1px solid var(--border); color: var(--text-dim); transition: all .2s;
+  }
+  .intent-chips .ic.sel { background: var(--grad); color: #0a0814; border-color: transparent; }
+
+  /* ---------- Footer ---------- */
+  footer { padding: 60px 0 40px; border-top: 1px solid var(--border); }
+  .foot-grid { display: flex; justify-content: space-between; gap: 40px; flex-wrap: wrap; margin-bottom: 40px; }
+  .foot-brand { max-width: 300px; }
+  .foot-brand p { color: var(--text-dim); font-size: 0.92rem; margin-top: 14px; }
+  .foot-cols { display: flex; gap: 64px; flex-wrap: wrap; }
+  .foot-col h5 { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-faint); margin-bottom: 16px; }
+  .foot-col a { display: block; color: var(--text-dim); font-size: 0.92rem; margin-bottom: 11px; transition: color .2s; }
+  .foot-col a:hover { color: var(--text); }
+  .foot-bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 28px; border-top: 1px solid var(--border); color: var(--text-faint); font-size: 0.86rem; flex-wrap: wrap; gap: 14px; }
+
+  /* ---------- Scroll reveal ---------- */
+  .reveal { opacity: 0; transform: translateY(34px); transition: opacity .8s var(--ease), transform .8s var(--ease); }
+  .reveal.in { opacity: 1; transform: none; }
+  .reveal.d1 { transition-delay: .08s; }
+  .reveal.d2 { transition-delay: .16s; }
+  .reveal.d3 { transition-delay: .24s; }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 940px) {
+    .steps { grid-template-columns: 1fr 1fr; }
+    .step .arrow { display: none; }
+    .types-grid { grid-template-columns: 1fr 1fr; }
+    .feature-split, .safety { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+    .menu-toggle { display: grid; place-items: center; }
+  }
+  @media (max-width: 600px) {
+    .steps, .types-grid, .safety-grid { grid-template-columns: 1fr; }
+    .hero { padding: 140px 0 80px; }
+    .hero-orbit { display: none; }
+    .signup-form { flex-direction: column; }
+    .signup-form .btn { justify-content: center; }
+    .feature-block { padding: 28px; }
+    .waitlist-card { padding: 44px 24px; }
+    .nav-cta .btn-ghost { display: none; }
+    .hero-stats { gap: 28px; }
+  }
+</style>
+</head>
+<body>
+<div class="bg-aura"></div>
+<div class="grain"></div>
+
+<!-- ===== NAV ===== -->
+<header id="header">
+  <div class="wrap">
+    <nav>
+      <a href="#" class="logo">
+        <span class="logo-mark">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-4.5-9.5-9C1 9 2.5 5 6 5c2 0 3.2 1.2 4 2.3C10.8 6.2 12 5 14 5c3.5 0 5 4 3.5 7-2.5 4.5-5.5 9-5.5 9z" fill="#0a0814"/></svg>
+        </span>
+        Veil
+      </a>
+      <div class="nav-links">
+        <a href="#how">How it works</a>
+        <a href="#types">Connection types</a>
+        <a href="#icebreakers">Icebreakers</a>
+        <a href="#safety">Safety</a>
+        <a href="#why">Why Veil</a>
+      </div>
+      <div class="nav-cta">
+        <a href="#waitlist" class="btn btn-ghost">Sign in</a>
+        <a href="#waitlist" class="btn btn-primary">Join waitlist</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="wrap">
+    <span class="pill reveal"><span class="dot"></span> Now in private beta · <b>12,480</b> on the waitlist</span>
+    <h1 class="reveal d1">Connect <span class="grad-text">anonymously.</span><br/>Reveal <span class="grad-text">intentionally.</span></h1>
+    <p class="sub reveal d2">Veil pairs you with one person who shares your interests and intent — then gives you a private 7-day window to actually talk. No photos, no swiping. Identity is revealed only if you both choose.</p>
+    <div class="hero-cta reveal d3">
+      <a href="#waitlist" class="btn btn-primary">Get early access
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </a>
+      <a href="#how" class="btn btn-ghost">See how it works</a>
+    </div>
+
+    <div class="hero-orbit">
+      <div class="float-card fc-1">
+        <span class="av" style="background:rgba(139,92,246,0.25);color:#c4b5fd">A</span>
+        <div><b>Match found</b><small>Intent: Friendship · 92% aligned</small></div>
+      </div>
+      <div class="float-card fc-2">
+        <span class="av" style="background:rgba(45,212,191,0.22);color:#5eead4">★</span>
+        <div><b>Day 3 icebreaker</b><small>Opinions &amp; worldview unlocked</small></div>
+      </div>
+      <div class="float-card fc-3">
+        <span class="av" style="background:rgba(236,72,153,0.22);color:#f9a8d4">✓</span>
+        <div><b>Mutual reveal</b><small>You both said yes</small></div>
+      </div>
+    </div>
+
+    <div class="hero-stats reveal">
+      <div class="stat"><div class="num grad-text">7 days</div><div class="lbl">to connect</div></div>
+      <div class="stat"><div class="num grad-text">5</div><div class="lbl">intent types</div></div>
+      <div class="stat"><div class="num grad-text">0</div><div class="lbl">endless swiping</div></div>
+      <div class="stat"><div class="num grad-text">100%</div><div class="lbl">anonymous start</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section id="how">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">How it works</span>
+      <h2>Four steps. One real connection.</h2>
+      <p>No infinite feeds. No burnout. Just a focused path from sign-up to a genuine match.</p>
+    </div>
+    <div class="steps">
+      <div class="step glass reveal">
+        <div class="idx">01</div>
+        <h3>Onboard</h3>
+        <p>Tell us who you are, what you're looking for, and how you like to connect. Takes 4 minutes.</p>
+        <span class="arrow"><svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+      <div class="step glass reveal d1">
+        <div class="idx">02</div>
+        <h3>Get matched</h3>
+        <p>Our weighted scoring engine pairs you with one person whose intent and interests truly align.</p>
+        <span class="arrow"><svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+      <div class="step glass reveal d2">
+        <div class="idx">03</div>
+        <h3>7-day chat</h3>
+        <p>A private window opens. Daily icebreakers guide you from light banter to what really matters.</p>
+        <span class="arrow"><svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+      <div class="step glass reveal d3">
+        <div class="idx">04</div>
+        <h3>Reveal</h3>
+        <p>On day 7, you both decide. Say yes together and identities unlock. No pressure, full consent.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CONNECTION TYPES ===== -->
+<section id="types">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">Intent-based matching</span>
+      <h2>Not just dating. Whatever you're here for.</h2>
+      <p>Choose your connection type and you'll only ever be matched with people whose intent aligns exactly with yours.</p>
+    </div>
+    <div class="types-grid">
+      <div class="type-card glass reveal">
+        <div class="type-icon" style="background:rgba(236,72,153,0.16)">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-4.5-9.5-9C1 9 2.5 5 6 5c2 0 3.2 1.2 4 2.3C10.8 6.2 12 5 14 5c3.5 0 5 4 3.5 7-2.5 4.5-5.5 9-5.5 9z" stroke="#f9a8d4" stroke-width="1.8"/></svg>
+        </div>
+        <h3>Dating</h3>
+        <p>Find chemistry beyond a profile photo. Connect through conversation first.</p>
+        <div class="tag-list"><span>Romance</span><span>Long-term</span><span>Chemistry</span></div>
+      </div>
+      <div class="type-card glass reveal d1">
+        <div class="type-icon" style="background:rgba(139,92,246,0.16)">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M16 14a4 4 0 10-8 0M12 7a3 3 0 100-6 3 3 0 000 6zM20 21v-1a4 4 0 00-3-3.87M4 21v-1a4 4 0 013-3.87" stroke="#c4b5fd" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Friendship</h3>
+        <p>Meet people who get your humor and your hobbies — real platonic bonds.</p>
+        <div class="tag-list"><span>Platonic</span><span>Hobbies</span><span>Local</span></div>
+      </div>
+      <div class="type-card glass reveal d2">
+        <div class="type-icon" style="background:rgba(45,212,191,0.16)">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M3 11l19-9-9 19-2-8-8-2z" stroke="#5eead4" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Travel Partner</h3>
+        <p>Pair with someone whose wanderlust and travel style match yours.</p>
+        <div class="tag-list"><span>Adventure</span><span>Trips</span><span>Explore</span></div>
+      </div>
+      <div class="type-card glass reveal">
+        <div class="type-icon" style="background:rgba(99,102,241,0.16)">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6" stroke="#a5b4fc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Professional / Investor</h3>
+        <p>Connect with founders, operators and investors — ideas before titles.</p>
+        <div class="tag-list"><span>Networking</span><span>Startups</span><span>Capital</span></div>
+      </div>
+      <div class="type-card glass reveal d1">
+        <div class="type-icon" style="background:rgba(251,191,36,0.16)">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M22 10L12 5 2 10l10 5 10-5zM6 12v5c0 1 2.7 2.5 6 2.5s6-1.5 6-2.5v-5" stroke="#fcd34d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Mentorship</h3>
+        <p>Find a mentor or mentee aligned on field, stage and growth goals.</p>
+        <div class="tag-list"><span>Guidance</span><span>Career</span><span>Growth</span></div>
+      </div>
+      <div class="type-card glass reveal d2" style="display:flex;flex-direction:column;justify-content:center;align-items:flex-start;background:var(--grad-soft)">
+        <h3 style="font-size:1.35rem">One intent at a time</h3>
+        <p>Switch your intent whenever your goals change — every match starts fresh and perfectly aligned.</p>
+        <a href="#waitlist" class="btn btn-ghost" style="margin-top:20px">Pick your intent</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ANONYMOUS + ONBOARDING ===== -->
+<section id="features">
+  <div class="wrap">
+    <div class="feature-split">
+      <div class="feature-block glass reveal">
+        <div class="fi"><svg viewBox="0 0 24 24" fill="none"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" stroke="#c4b5fd" stroke-width="1.8"/><path d="M4 4l16 16" stroke="#c4b5fd" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+        <h3>Anonymous by design</h3>
+        <p>You're never reduced to a photo. Veil hides identity until the connection has earned it.</p>
+        <div class="feature-list">
+          <div class="li"><span class="ck"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span> No profile photos until the reveal</div>
+          <div class="li"><span class="ck"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Anonymous handles, not your real name</div>
+          <div class="li"><span class="ck"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Identity unlocks only on mutual consent</div>
+          <div class="li"><span class="ck"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Judged on character, not appearance</div>
+        </div>
+      </div>
+
+      <div class="feature-block glass reveal d1">
+        <div class="fi"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.2L12 16.6 5.7 21l2.3-7.2-6-4.4h7.6L12 2z" stroke="#5eead4" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+        <h3>Onboarding that gets you</h3>
+        <p>A multi-layered profile feeds our weighted vector similarity engine — so matches feel handpicked.</p>
+        <div class="onboard-layers">
+          <div class="layer"><h4>Who you are</h4><p>Hobbies, interests, personality &amp; communication style</p></div>
+          <div class="layer"><h4>What you want</h4><p>Connection intent &amp; preferences (incl. gender, if dating)</p></div>
+          <div class="layer"><h4>Match preferences</h4><p>Similar vs. complementary, plus your deal-breakers</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ICEBREAKERS ===== -->
+<section id="icebreakers">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">Daily icebreakers</span>
+      <h2>A new prompt every day, going deeper.</h2>
+      <p>One personalized conversation starter a day — tuned to your match's intent and interests. Tap through the 7-day arc.</p>
+    </div>
+
+    <div class="ib reveal d1">
+      <div class="ib-days" id="ibDays"></div>
+      <div class="ib-stage">
+        <div class="ib-card">
+          <div class="ib-progress"><span id="ibBar" style="width:14%"></span></div>
+          <div class="ib-theme grad-text" id="ibTheme">Light &amp; fun</div>
+          <div class="ib-prompt" id="ibPrompt">If your life had a theme song playing right now, what would it be — and why that one?</div>
+          <div class="ib-meta" id="ibMeta">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.2L12 16.6 5.7 21l2.3-7.2-6-4.4h7.6L12 2z" stroke="#6f6a8d" stroke-width="1.6"/></svg>
+            Personalized for a <b style="color:var(--text-dim);margin:0 3px">Friendship</b> match
+          </div>
+        </div>
+      </div>
+      <div class="ib-nav">
+        <div class="ib-arrow" id="ibPrev">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="ib-counter"><span id="ibCount">Day 1</span> of 7</div>
+        <div class="ib-arrow" id="ibNext">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SAFETY ===== -->
+<section id="safety">
+  <div class="wrap">
+    <div class="safety">
+      <div>
+        <div class="sec-tag reveal">Safety &amp; privacy</div>
+        <h2 class="reveal d1" style="font-size:clamp(2rem,4vw,2.9rem);letter-spacing:-0.025em;line-height:1.1;margin-bottom:16px">A silent guardian in every chat.</h2>
+        <p class="reveal d2" style="color:var(--text-dim);font-size:1.06rem;margin-bottom:30px">Our in-chat safety bot watches for trouble in the background — without ever reading or storing your messages. It only scans for trigger patterns, then steps in when it matters.</p>
+        <div class="safety-grid">
+          <div class="safety-item glass reveal">
+            <div class="si"><svg viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#c4b5fd" stroke-width="1.7" stroke-linejoin="round"/></svg></div>
+            <h4>Threat detection</h4>
+            <p>Flags harassment, scam patterns &amp; explicit content in real time.</p>
+          </div>
+          <div class="safety-item glass reveal d1">
+            <div class="si"><svg viewBox="0 0 24 24" fill="none"><path d="M18 8h1a3 3 0 010 6h-1M2 8h12v9a3 3 0 01-3 3H5a3 3 0 01-3-3V8zM6 1v3M10 1v3" stroke="#5eead4" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+            <h4>Crisis support</h4>
+            <p>Detects crisis keywords and surfaces help resources instantly.</p>
+          </div>
+          <div class="safety-item glass reveal d2">
+            <div class="si"><svg viewBox="0 0 24 24" fill="none"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="#a5b4fc" stroke-width="1.7"/><path d="M5 12c0-1 .2-2 .5-3M19 12c0 1-.2 2-.5 3" stroke="#a5b4fc" stroke-width="1.7" stroke-linecap="round"/><path d="M3 9l-1 3 1 3M21 9l1 3-1 3" stroke="#a5b4fc" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <h4>Info-leak shield</h4>
+            <p>Soft-warns before you accidentally share identifying details too early.</p>
+          </div>
+          <div class="safety-item glass reveal d3">
+            <div class="si"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.2L12 16.6 5.7 21l2.3-7.2-6-4.4h7.6L12 2z" stroke="#fcd34d" stroke-width="1.5" stroke-linejoin="round"/></svg></div>
+            <h4>Positive nudges</h4>
+            <p>Celebrates streak milestones and suggests deeper questions.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal d2">
+        <div class="chat-mock">
+          <div class="chat-head">
+            <span class="av">?</span>
+            <div class="meta"><b>Anonymous · Lynx</b><br/><small>● Online · Day 4 of 7</small></div>
+            <span class="timer">3d left</span>
+          </div>
+          <div class="bubble them">Okay your turn — what's a story you tell that always makes people laugh?</div>
+          <div class="bubble me">Oh I have a great one. So back in college my roommate and I...</div>
+          <div class="bubble them">Haha can't wait. Btw my number is 555-</div>
+          <div style="margin:14px 0">
+            <div class="bot-note">
+              <span class="bicon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+              <div><b>Veil Guardian</b> — Heads up: sharing personal contact info is hidden until your reveal on Day 7. Keep the magic going here. 🔒</div>
+            </div>
+          </div>
+          <div class="bot-note" style="background:rgba(139,92,246,0.08);border-color:rgba(139,92,246,0.3)">
+            <span class="bicon" style="background:rgba(139,92,246,0.2)"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.2L12 16.6 5.7 21l2.3-7.2-6-4.4h7.6L12 2z" stroke="#c4b5fd" stroke-width="1.6"/></svg></span>
+            <div style="color:var(--text-dim)"><b style="color:#c4b5fd">4-day streak!</b> You two are clicking. Try today's deeper prompt about values.</div>
+          </div>
+        </div>
+        <p style="text-align:center;color:var(--text-faint);font-size:0.84rem;margin-top:18px">Privacy-first: the bot scans patterns, never content.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== WHY US ===== -->
+<section id="why">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">Why Veil</span>
+      <h2>Built for connection, not addiction.</h2>
+      <p>The apps you know are designed to keep you swiping. Veil is designed to get you talking — and then out of the app.</p>
+    </div>
+    <div class="compare reveal d1">
+      <table class="cmp">
+        <thead>
+          <tr>
+            <th class="feat">&nbsp;</th>
+            <th class="us"><span class="cmp-logo grad-text">Veil</span></th>
+            <th><span class="cmp-logo">Tinder / Bumble</span></th>
+            <th><span class="cmp-logo">LinkedIn</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="feat">Anonymous until mutual reveal</td>
+            <td class="us-col"><span class="yes">Yes</span></td>
+            <td><span class="no">No</span></td>
+            <td><span class="no">No</span></td>
+          </tr>
+          <tr>
+            <td class="feat">Matches by intent, not just dating</td>
+            <td class="us-col"><span class="yes">5 intents</span></td>
+            <td><span class="no">Dating only</span></td>
+            <td><span class="no">Work only</span></td>
+          </tr>
+          <tr>
+            <td class="feat">Focused 1-match, 7-day window</td>
+            <td class="us-col"><span class="yes">Yes</span></td>
+            <td><span class="no">Endless swiping</span></td>
+            <td><span class="no">Open inbox</span></td>
+          </tr>
+          <tr>
+            <td class="feat">Guided daily icebreakers</td>
+            <td class="us-col"><span class="yes">7-day arc</span></td>
+            <td><span class="no">No</span></td>
+            <td><span class="no">No</span></td>
+          </tr>
+          <tr>
+            <td class="feat">Silent, privacy-first safety bot</td>
+            <td class="us-col"><span class="yes">Built-in</span></td>
+            <td><span class="no">Limited</span></td>
+            <td><span class="no">No</span></td>
+          </tr>
+          <tr>
+            <td class="feat">Judged on personality first</td>
+            <td class="us-col"><span class="yes">Always</span></td>
+            <td><span class="no">Photo-first</span></td>
+            <td><span class="no">Résumé-first</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ===== WAITLIST ===== -->
+<section id="waitlist">
+  <div class="wrap">
+    <div class="waitlist-card reveal">
+      <span class="pill" style="margin-bottom:24px"><span class="dot"></span> Limited beta spots</span>
+      <h2>Be among the first to connect on Veil.</h2>
+      <p>Join the waitlist and we'll reserve your spot. Tell us what you're looking for and we'll prioritize your first match.</p>
+
+      <div class="intent-chips" id="intentChips">
+        <span class="ic sel">Dating</span>
+        <span class="ic">Friendship</span>
+        <span class="ic">Travel Partner</span>
+        <span class="ic">Professional</span>
+        <span class="ic">Mentorship</span>
+      </div>
+
+      <form class="signup-form" id="signupForm">
+        <input type="email" id="emailInput" placeholder="you@example.com" required />
+        <button type="submit" class="btn btn-primary">Join waitlist</button>
+      </form>
+      <p class="form-note">No spam. We'll only email you when your spot opens.</p>
+      <div class="success-msg" id="successMsg"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a href="#" class="logo">
+          <span class="logo-mark"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-4.5-9.5-9C1 9 2.5 5 6 5c2 0 3.2 1.2 4 2.3C10.8 6.2 12 5 14 5c3.5 0 5 4 3.5 7-2.5 4.5-5.5 9-5.5 9z" fill="#0a0814"/></svg></span>
+          Veil
+        </a>
+        <p>Anonymous, intent-based matchmaking. Connect on who you are — reveal only when you both choose.</p>
+      </div>
+      <div class="foot-cols">
+        <div class="foot-col">
+          <h5>Product</h5>
+          <a href="#how">How it works</a>
+          <a href="#types">Connection types</a>
+          <a href="#icebreakers">Icebreakers</a>
+          <a href="#safety">Safety</a>
+        </div>
+        <div class="foot-col">
+          <h5>Company</h5>
+          <a href="#">About</a>
+          <a href="#">Careers</a>
+          <a href="#">Press</a>
+          <a href="#waitlist">Waitlist</a>
+        </div>
+        <div class="foot-col">
+          <h5>Legal</h5>
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+          <a href="#">Safety policy</a>
+          <a href="#">Contact</a>
+        </div>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Veil. All rights reserved.</span>
+      <span>Made for real connection.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ===== Sticky nav =====
+  const header = document.getElementById('header');
+  window.addEventListener('scroll', () => {
+    header.classList.toggle('scrolled', window.scrollY > 20);
+  });
+
+  // ===== Scroll reveal =====
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (e.isIntersecting) {
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+
+  // ===== Icebreaker carousel =====
+  const icebreakers = [
+    { day: 1, theme: 'Light & fun', intent: 'Friendship',
+      prompt: 'If your life had a theme song playing right now, what would it be — and why that one?' },
+    { day: 2, theme: 'Preferences', intent: 'Friendship',
+      prompt: 'Coffee or chaos in the morning? Walk me through your ideal first hour awake.' },
+    { day: 3, theme: 'Opinions & worldview', intent: 'Friendship',
+      prompt: "What's an opinion you hold that most people around you seem to disagree with?" },
+    { day: 4, theme: 'Storytelling', intent: 'Friendship',
+      prompt: "Tell me about a moment that changed the direction of your life — even a small one." },
+    { day: 5, theme: 'Values', intent: 'Friendship',
+      prompt: 'When you imagine a life well-lived, what are the three things that absolutely have to be in it?' },
+    { day: 6, theme: 'Vulnerability', intent: 'Friendship',
+      prompt: "What's something you're working on about yourself that you don't talk about often?" },
+    { day: 7, theme: 'The reveal setup', intent: 'Friendship',
+      prompt: "We've come a long way in a week. What's one thing you're hoping is true about me — and are you ready to find out?" },
+  ];
+
+  let current = 0;
+  const themes = ['#c4b5fd','#a5b4fc','#818cf8','#5eead4','#2dd4bf','#f9a8d4','#fcd34d'];
+  const ibDays = document.getElementById('ibDays');
+  const ibTheme = document.getElementById('ibTheme');
+  const ibPrompt = document.getElementById('ibPrompt');
+  const ibBar = document.getElementById('ibBar');
+  const ibCount = document.getElementById('ibCount');
+  const ibCard = document.querySelector('.ib-card');
+
+  icebreakers.forEach((ib, i) => {
+    const b = document.createElement('button');
+    b.className = 'ib-day' + (i === 0 ? ' active' : '');
+    b.textContent = 'Day ' + ib.day;
+    b.addEventListener('click', () => { current = i; render(); });
+    ibDays.appendChild(b);
+  });
+
+  function render() {
+    const ib = icebreakers[current];
+    ibTheme.textContent = ib.theme;
+    ibPrompt.textContent = ib.prompt;
+    ibBar.style.width = Math.round(((current + 1) / icebreakers.length) * 100) + '%';
+    ibCount.textContent = 'Day ' + ib.day;
+    ibCard.classList.remove('ib-fade');
+    void ibCard.offsetWidth;
+    ibCard.classList.add('ib-fade');
+    ibTheme.style.color = themes[current];
+    document.querySelectorAll('.ib-day').forEach((d, i) => d.classList.toggle('active', i === current));
+  }
+
+  document.getElementById('ibNext').addEventListener('click', () => {
+    current = (current + 1) % icebreakers.length; render();
+  });
+  document.getElementById('ibPrev').addEventListener('click', () => {
+    current = (current - 1 + icebreakers.length) % icebreakers.length; render();
+  });
+
+  // ===== Intent chips =====
+  document.querySelectorAll('#intentChips .ic').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('#intentChips .ic').forEach((c) => c.classList.remove('sel'));
+      chip.classList.add('sel');
+    });
+  });
+
+  // ===== Waitlist form =====
+  const form = document.getElementById('signupForm');
+  const success = document.getElementById('successMsg');
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = document.getElementById('emailInput').value;
+    const intent = document.querySelector('#intentChips .ic.sel').textContent;
+    form.style.display = 'none';
+    document.querySelector('.form-note').style.display = 'none';
+    success.classList.add('show');
+    success.innerHTML = "You're on the list! We'll reach out to <b>" + email + "</b> when your <b>" + intent + "</b> spot opens. 🎉";
+  });
+</script>
+</body>
+</html>
