@@ -133,47 +133,81 @@
   .nav-cta { display: flex; align-items: center; gap: 14px; }
   .menu-toggle { display: none; background: none; border: none; color: var(--text); cursor: pointer; }
 
-  /* ---------- Hero ---------- */
-  .hero { position: relative; padding: 170px 0 110px; text-align: center; }
   .pill {
     display: inline-flex; align-items: center; gap: 9px;
     padding: 7px 16px 7px 9px; border-radius: 999px;
     background: var(--surface); border: 1px solid var(--border-strong);
-    font-size: 0.82rem; color: var(--text-dim); backdrop-filter: blur(10px); margin-bottom: 30px;
+    font-size: 0.82rem; color: var(--text-dim); backdrop-filter: blur(10px);
   }
   .pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--teal); box-shadow: 0 0 0 4px rgba(45,212,191,0.18); animation: pulse 2.4s infinite; }
   .pill b { color: var(--text); font-weight: 600; }
   @keyframes pulse { 50% { box-shadow: 0 0 0 8px rgba(45,212,191,0); } }
 
+  /* ---------- Hero ---------- */
+  .hero { position: relative; padding: 120px 0 110px; text-align: center; }
+
+  /* Orbit constellation visual */
+  .hero-visual {
+    position: relative; width: 100%; max-width: 620px;
+    height: 540px; margin: 0 auto 6px;
+  }
+  .orbit { position: absolute; inset: 0; }
+  .ring {
+    position: absolute; left: 50%; top: 50%; border-radius: 50%;
+    border: 1px dashed rgba(255,255,255,0.10);
+    transform: translate(-50%, -50%);
+    animation: ringSpin 60s linear infinite;
+  }
+  .ring.r1 { width: 270px; height: 270px; }
+  .ring.r2 { width: 410px; height: 410px; border-color: rgba(255,255,255,0.07); animation-duration: 90s; animation-direction: reverse; }
+  .ring.r3 { width: 560px; height: 560px; border-color: rgba(255,255,255,0.045); animation-duration: 120s; }
+  @keyframes ringSpin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+  .orb {
+    position: absolute; left: 50%; top: 50%;
+    width: 124px; height: 124px; border-radius: 50%; margin: -62px;
+    display: grid; place-items: center; z-index: 3;
+    background: radial-gradient(circle at 36% 30%, #c084fc, #8b5cf6 42%, #d6409f 100%);
+    box-shadow: 0 0 60px -6px rgba(168,85,247,0.85), 0 0 130px 12px rgba(217,70,160,0.32);
+    animation: orbPulse 5s ease-in-out infinite;
+  }
+  .orb svg { width: 46px; height: 46px; color: #fff; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.25)); }
+  @keyframes orbPulse { 50% { box-shadow: 0 0 78px -2px rgba(168,85,247,0.95), 0 0 160px 18px rgba(217,70,160,0.42); } }
+
+  /* rotating orbit tracks */
+  .track { position: absolute; left: 50%; top: 50%; width: 0; height: 0; z-index: 2; }
+  .track.t1 { animation: spin 30s linear infinite; }
+  .track.t2 { animation: spin 46s linear infinite reverse; }
+  .track.t3 { animation: spin 62s linear infinite; }
+
+  .node {
+    position: absolute; left: 0; top: 0; width: 64px; height: 64px; margin: -32px;
+    border-radius: 50%; display: grid; place-items: center;
+    border: 1px solid rgba(255,255,255,0.14); backdrop-filter: blur(4px);
+    transform: rotate(var(--a)) translateX(var(--r)) rotate(calc(-1 * var(--a)));
+  }
+  .node .ic { font-size: 26px; line-height: 1; display: block; }
+  .track.t1 .node .ic { animation: spin 30s linear infinite reverse; }
+  .track.t2 .node .ic { animation: spin 46s linear infinite; }
+  .track.t3 .node .ic { animation: spin 62s linear infinite reverse; }
+  .node.n-violet { background: radial-gradient(circle at 50% 38%, rgba(139,92,246,0.5), rgba(139,92,246,0.1)); box-shadow: 0 0 30px -4px rgba(139,92,246,0.7); }
+  .node.n-red    { background: radial-gradient(circle at 50% 38%, rgba(225,72,99,0.46), rgba(150,30,50,0.1)); box-shadow: 0 0 30px -4px rgba(225,72,99,0.6); }
+  .node.n-teal   { background: radial-gradient(circle at 50% 38%, rgba(45,212,191,0.44), rgba(15,140,130,0.1)); box-shadow: 0 0 30px -4px rgba(45,212,191,0.6); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
   .hero h1 {
-    font-size: clamp(2.6rem, 6.2vw, 5rem); line-height: 1.04; letter-spacing: -0.03em;
+    font-size: clamp(2.6rem, 7vw, 5.2rem); line-height: 1.02; letter-spacing: -0.035em;
     font-weight: 800; margin-bottom: 24px;
+  }
+  .grad-rush {
+    background: linear-gradient(90deg, #a78bfa 0%, #ec4899 52%, #38bdf8 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
   }
   .hero p.sub {
     font-size: clamp(1.05rem, 2.1vw, 1.32rem); color: var(--text-dim);
-    max-width: 640px; margin: 0 auto 38px;
+    max-width: 600px; margin: 0 auto 40px;
   }
   .hero-cta { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
-  .hero-stats { display: flex; gap: 44px; justify-content: center; margin-top: 64px; flex-wrap: wrap; }
-  .hero-stats .stat { text-align: center; }
-  .hero-stats .num { font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; }
-  .hero-stats .lbl { font-size: 0.84rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.08em; }
-
-  /* Floating match cards in hero */
-  .hero-orbit { position: relative; max-width: 760px; margin: 70px auto 0; height: 220px; }
-  .float-card {
-    position: absolute; padding: 16px 18px; border-radius: 16px;
-    background: var(--surface-strong); border: 1px solid var(--border);
-    backdrop-filter: blur(14px); box-shadow: var(--shadow);
-    display: flex; align-items: center; gap: 12px; font-size: 0.9rem;
-    animation: floaty 6s var(--ease) infinite alternate;
-  }
-  .float-card .av { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; flex-shrink: 0; }
-  .float-card small { color: var(--text-faint); display: block; font-size: 0.76rem; }
-  .fc-1 { top: 0; left: 2%; animation-delay: 0s; }
-  .fc-2 { top: 30%; right: 0; animation-delay: 1.2s; }
-  .fc-3 { bottom: 0; left: 24%; animation-delay: 2.1s; }
-  @keyframes floaty { to { transform: translateY(-18px); } }
 
   /* ---------- Section shell ---------- */
   section { position: relative; padding: 100px 0; }
@@ -282,6 +316,35 @@
   .ib-arrow:hover { background: var(--surface-strong); transform: scale(1.08); }
   .ib-counter { font-size: 0.92rem; color: var(--text-faint); }
 
+  /* ---------- Reveal ---------- */
+  .reveal-grid {
+    display: grid; grid-template-columns: 1fr auto 1fr; gap: 0; align-items: center;
+    max-width: 880px; margin: 0 auto;
+  }
+  .reveal-card {
+    padding: 38px 34px 34px; border-radius: 24px; text-align: center;
+    background: var(--surface); border: 1px solid var(--border);
+    backdrop-filter: blur(16px); position: relative;
+  }
+  .reveal-card.muted { opacity: 0.92; }
+  .reveal-glow {
+    width: 150px; height: 150px; margin: 0 auto 18px; border-radius: 50%;
+    filter: blur(14px);
+  }
+  .reveal-glow.violet { background: radial-gradient(circle at 50% 45%, #818cf8 0%, #6d28d9 45%, transparent 72%); animation: glowPulse 4s ease-in-out infinite; }
+  .reveal-glow.rose   { background: radial-gradient(circle at 50% 45%, #fb923c 0%, #e11d6b 45%, transparent 72%); animation: glowPulse 4s ease-in-out infinite .8s; }
+  @keyframes glowPulse { 50% { transform: scale(1.06); opacity: 0.9; } }
+  .reveal-card .qmark { font-size: 1.7rem; font-weight: 800; letter-spacing: 0.06em; margin-bottom: 6px; }
+  .reveal-card .state { color: var(--text-dim); font-size: 0.98rem; }
+  .reveal-card .substate { color: var(--text-faint); font-size: 0.9rem; margin-top: 6px; }
+  .reveal-card .btn { margin-top: 24px; width: 100%; justify-content: center; }
+  .reveal-divider {
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+    padding: 0 28px; color: var(--text-faint); font-size: 0.9rem; font-weight: 500;
+  }
+  .reveal-divider .line { width: 1px; height: 70px; background: linear-gradient(var(--border-strong), transparent); }
+  .reveal-divider .line.top { background: linear-gradient(transparent, var(--border-strong)); }
+
   /* ---------- Safety ---------- */
   .safety { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 40px; align-items: center; }
   .safety-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -381,19 +444,25 @@
     .step .arrow { display: none; }
     .types-grid { grid-template-columns: 1fr 1fr; }
     .feature-split, .safety { grid-template-columns: 1fr; }
+    .reveal-grid { grid-template-columns: 1fr; gap: 18px; max-width: 420px; }
+    .reveal-divider { flex-direction: row; padding: 0; }
+    .reveal-divider .line { width: 60px; height: 1px; background: linear-gradient(90deg, transparent, var(--border-strong)); }
+    .reveal-divider .line.top { background: linear-gradient(90deg, var(--border-strong), transparent); }
     .nav-links { display: none; }
     .menu-toggle { display: grid; place-items: center; }
   }
+  @media (max-width: 760px) {
+    .hero-visual { transform: scale(0.82); margin-bottom: -40px; }
+  }
   @media (max-width: 600px) {
     .steps, .types-grid, .safety-grid { grid-template-columns: 1fr; }
-    .hero { padding: 140px 0 80px; }
-    .hero-orbit { display: none; }
+    .hero { padding: 110px 0 80px; }
+    .hero-visual { transform: scale(0.62); height: 480px; margin: -30px auto -70px; }
     .signup-form { flex-direction: column; }
     .signup-form .btn { justify-content: center; }
     .feature-block { padding: 28px; }
     .waitlist-card { padding: 44px 24px; }
     .nav-cta .btn-ghost { display: none; }
-    .hero-stats { gap: 28px; }
   }
 </style>
 </head>
@@ -429,36 +498,44 @@
 <!-- ===== HERO ===== -->
 <section class="hero">
   <div class="wrap">
-    <span class="pill reveal"><span class="dot"></span> Now in private beta · <b>12,480</b> on the waitlist</span>
-    <h1 class="reveal d1">Connect <span class="grad-text">anonymously.</span><br/>Reveal <span class="grad-text">intentionally.</span></h1>
-    <p class="sub reveal d2">Veil pairs you with one person who shares your interests and intent — then gives you a private 7-day window to actually talk. No photos, no swiping. Identity is revealed only if you both choose.</p>
+    <div class="hero-visual reveal">
+      <div class="orbit">
+        <span class="ring r1"></span>
+        <span class="ring r2"></span>
+        <span class="ring r3"></span>
+
+        <!-- inner orbit -->
+        <div class="track t1">
+          <span class="node n-violet" style="--a:300deg;--r:135px"><span class="ic">🧑‍🎓</span></span>
+          <span class="node n-teal" style="--a:120deg;--r:135px"><span class="ic">🧑‍💻</span></span>
+        </div>
+
+        <!-- middle orbit -->
+        <div class="track t2">
+          <span class="node n-red" style="--a:80deg;--r:205px"><span class="ic">👩</span></span>
+          <span class="node n-violet" style="--a:200deg;--r:205px"><span class="ic">🧑</span></span>
+          <span class="node n-teal" style="--a:330deg;--r:205px"><span class="ic">🧑</span></span>
+        </div>
+
+        <!-- outer orbit -->
+        <div class="track t3">
+          <span class="node n-red" style="--a:40deg;--r:280px"><span class="ic">🧑‍🚀</span></span>
+          <span class="node n-teal" style="--a:160deg;--r:280px"><span class="ic">👩</span></span>
+          <span class="node n-violet" style="--a:260deg;--r:280px"><span class="ic">🧑</span></span>
+        </div>
+
+        <!-- center orb -->
+        <span class="orb"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c.45 4.7 2.6 6.85 7.3 7.3-4.7.45-6.85 2.6-7.3 7.3-.45-4.7-2.6-6.85-7.3-7.3 4.7-.45 6.85-2.6 7.3-7.3z"/></svg></span>
+      </div>
+    </div>
+
+    <h1 class="reveal d1">Real connections.<br/>No pretense. <span class="grad-rush">No rush.</span></h1>
+    <p class="sub reveal d2">Get matched anonymously based on who you are and what you actually want. Chat for 7 days. Reveal when you're ready.</p>
     <div class="hero-cta reveal d3">
-      <a href="#waitlist" class="btn btn-primary">Get early access
+      <a href="#waitlist" class="btn btn-primary">Get Early Access
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </a>
       <a href="#how" class="btn btn-ghost">See how it works</a>
-    </div>
-
-    <div class="hero-orbit">
-      <div class="float-card fc-1">
-        <span class="av" style="background:rgba(139,92,246,0.25);color:#c4b5fd">A</span>
-        <div><b>Match found</b><small>Intent: Friendship · 92% aligned</small></div>
-      </div>
-      <div class="float-card fc-2">
-        <span class="av" style="background:rgba(45,212,191,0.22);color:#5eead4">★</span>
-        <div><b>Day 3 icebreaker</b><small>Opinions &amp; worldview unlocked</small></div>
-      </div>
-      <div class="float-card fc-3">
-        <span class="av" style="background:rgba(236,72,153,0.22);color:#f9a8d4">✓</span>
-        <div><b>Mutual reveal</b><small>You both said yes</small></div>
-      </div>
-    </div>
-
-    <div class="hero-stats reveal">
-      <div class="stat"><div class="num grad-text">7 days</div><div class="lbl">to connect</div></div>
-      <div class="stat"><div class="num grad-text">5</div><div class="lbl">intent types</div></div>
-      <div class="stat"><div class="num grad-text">0</div><div class="lbl">endless swiping</div></div>
-      <div class="stat"><div class="num grad-text">100%</div><div class="lbl">anonymous start</div></div>
     </div>
   </div>
 </section>
@@ -617,6 +694,39 @@
         <div class="ib-arrow" id="ibNext">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== THE REVEAL ===== -->
+<section id="reveal">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">The reveal</span>
+      <h2>Day 7 — the moment of truth</h2>
+      <p>Both choose. Both consent. Or take more time — there's no pressure, ever.</p>
+    </div>
+
+    <div class="reveal-grid">
+      <div class="reveal-card reveal">
+        <div class="reveal-glow violet"></div>
+        <div class="qmark">???</div>
+        <div class="state">Ready to reveal</div>
+        <a href="#waitlist" class="btn btn-primary">Reveal yourself ✦</a>
+      </div>
+
+      <div class="reveal-divider reveal d1">
+        <span class="line top"></span>
+        7 days
+        <span class="line"></span>
+      </div>
+
+      <div class="reveal-card muted reveal d2">
+        <div class="reveal-glow rose"></div>
+        <div class="qmark">???</div>
+        <div class="state">Waiting for your move…</div>
+        <div class="substate">Will reveal when you do</div>
       </div>
     </div>
   </div>
