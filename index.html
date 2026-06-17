@@ -431,6 +431,80 @@
   .foot-col a:hover { color: var(--text); }
   .foot-bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 28px; border-top: 1px solid var(--border); color: var(--text-faint); font-size: 0.86rem; flex-wrap: wrap; gap: 14px; }
 
+  /* ---------- Trust & verification ---------- */
+  .trust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; max-width: 900px; margin: 0 auto; }
+  .trust-pill { display: flex; gap: 18px; align-items: flex-start; padding: 26px 28px; }
+  .trust-pill .tp-ic {
+    flex-shrink: 0; width: 54px; height: 54px; border-radius: 14px; display: grid; place-items: center;
+    font-size: 1.7rem; background: var(--grad-soft); border: 1px solid var(--border-strong);
+  }
+  .trust-pill h4 { font-size: 1.08rem; margin-bottom: 5px; letter-spacing: -0.01em; }
+  .trust-pill p { color: var(--text-dim); font-size: 0.92rem; }
+
+  /* ---------- Your Circle (social graph) ---------- */
+  .circle-graph { position: relative; width: 100%; max-width: 560px; height: 470px; margin: 0 auto; }
+  .circle-graph .links { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .cline { stroke-width: 2; fill: none; stroke-linecap: round; animation: lineGlow 3s ease-in-out infinite; }
+  .cline.pink { stroke: #ec4899; }
+  .cline.cyan { stroke: #06b6d4; }
+  .cline.purple { stroke: #7c3aed; }
+  @keyframes lineGlow { 0%, 100% { stroke-opacity: 0.22; } 50% { stroke-opacity: 0.85; } }
+  .cnode {
+    position: absolute; width: 58px; height: 58px; border-radius: 50%; transform: translate(-50%, -50%);
+    display: grid; place-items: center; font-size: 24px; cursor: pointer; z-index: 2;
+    background: var(--surface-strong); border: 1px solid var(--border); backdrop-filter: blur(8px);
+    transition: transform .25s var(--ease);
+  }
+  .cnode:hover { transform: translate(-50%, -50%) scale(1.14); z-index: 6; }
+  .cnode.pink   { border-color: rgba(236,72,153,0.55); box-shadow: 0 0 26px -6px rgba(236,72,153,0.7); }
+  .cnode.cyan   { border-color: rgba(6,182,212,0.55); box-shadow: 0 0 26px -6px rgba(6,182,212,0.7); }
+  .cnode.purple { border-color: rgba(124,58,237,0.6); box-shadow: 0 0 26px -6px rgba(124,58,237,0.7); }
+  .cnode.center {
+    width: 88px; height: 88px; font-size: 36px; border: none; z-index: 3;
+    background: var(--grad); box-shadow: 0 0 50px -8px rgba(139,92,246,0.85);
+    animation: orbPulse 5s ease-in-out infinite;
+  }
+  .ct-tip {
+    position: absolute; bottom: calc(100% + 12px); left: 50%; transform: translateX(-50%) translateY(6px);
+    width: 212px; padding: 11px 14px; border-radius: 12px; font-size: 0.8rem; line-height: 1.45;
+    color: var(--text-dim); background: rgba(15,12,28,0.97); border: 1px solid var(--border-strong);
+    box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 8;
+  }
+  .ct-tip b { color: var(--text); font-weight: 600; }
+  .cnode:hover .ct-tip { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ---------- Offline meetups ---------- */
+  .meet-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+  .meet-card { padding: 32px 28px; }
+  .meet-card .emoji { font-size: 2.3rem; display: block; margin-bottom: 16px; }
+  .meet-card h3 { font-size: 1.16rem; margin-bottom: 8px; letter-spacing: -0.01em; }
+  .meet-card p { color: var(--text-dim); font-size: 0.95rem; }
+
+  /* ---------- Graceful endings (rematch) ---------- */
+  .rematch-split { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: stretch; }
+  .rematch-side { padding: 34px; }
+  .fade-chat { position: relative; -webkit-mask-image: linear-gradient(180deg, transparent, #000 30%); mask-image: linear-gradient(180deg, transparent, #000 30%); }
+  .fade-chat .bubble { opacity: 0.55; }
+  .window-ended {
+    margin-top: 22px; text-align: center; font-size: 0.92rem; color: var(--text-faint);
+    padding: 12px; border-top: 1px solid var(--border);
+  }
+  .insight-side { display: flex; flex-direction: column; justify-content: center; background: var(--grad-soft); }
+  .insight-label { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #a78bfa; margin-bottom: 14px; }
+  .insight-card .ins-text { font-size: 1.18rem; line-height: 1.5; letter-spacing: -0.01em; margin-bottom: 24px; }
+  .insight-card .ins-text b { background: var(--grad); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+
+  /* ---------- Anonymous stories ---------- */
+  .stories-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+  .story-card { padding: 30px 28px; display: flex; flex-direction: column; gap: 18px; }
+  .story-badge {
+    align-self: flex-start; font-size: 0.82rem; font-weight: 600; padding: 6px 14px; border-radius: 999px;
+    background: var(--surface-strong); border: 1px solid var(--border); color: var(--text-dim);
+  }
+  .story-quote { font-style: italic; font-size: 1.06rem; line-height: 1.55; color: var(--text); }
+  .story-loc { margin-top: auto; font-size: 0.82rem; color: var(--text-faint); display: flex; align-items: center; gap: 7px; }
+  .story-loc .pindot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); }
+
   /* ---------- Scroll reveal ---------- */
   .reveal { opacity: 0; transform: translateY(34px); transition: opacity .8s var(--ease), transform .8s var(--ease); }
   .reveal.in { opacity: 1; transform: none; }
@@ -448,16 +522,21 @@
     .reveal-divider { flex-direction: row; padding: 0; }
     .reveal-divider .line { width: 60px; height: 1px; background: linear-gradient(90deg, transparent, var(--border-strong)); }
     .reveal-divider .line.top { background: linear-gradient(90deg, var(--border-strong), transparent); }
+    .rematch-split { grid-template-columns: 1fr; }
+    .meet-grid, .stories-grid { grid-template-columns: 1fr; }
     .nav-links { display: none; }
     .menu-toggle { display: grid; place-items: center; }
   }
   @media (max-width: 760px) {
     .hero-visual { transform: scale(0.82); margin-bottom: -40px; }
+    .circle-graph { transform: scale(0.84); }
   }
   @media (max-width: 600px) {
     .steps, .types-grid, .safety-grid { grid-template-columns: 1fr; }
+    .trust-grid { grid-template-columns: 1fr; }
     .hero { padding: 110px 0 80px; }
     .hero-visual { transform: scale(0.62); height: 480px; margin: -30px auto -70px; }
+    .circle-graph { transform: scale(0.6); height: 320px; margin: -40px auto; }
     .signup-form { flex-direction: column; }
     .signup-form .btn { justify-content: center; }
     .feature-block { padding: 28px; }
@@ -530,7 +609,7 @@
     </div>
 
     <h1 class="reveal d1">Real connections.<br/>No pretense. <span class="grad-rush">No rush.</span></h1>
-    <p class="sub reveal d2">Get matched anonymously based on who you are and what you actually want. Chat for 7 days. Reveal when you're ready.</p>
+    <p class="sub reveal d2">The last honest place on the internet to meet someone. No photos. No performance. Just two verified humans discovering each other at their own pace.</p>
     <div class="hero-cta reveal d3">
       <a href="#waitlist" class="btn btn-primary">Get Early Access
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -569,8 +648,37 @@
       </div>
       <div class="step glass reveal d3">
         <div class="idx">04</div>
-        <h3>Reveal</h3>
-        <p>On day 7, you both decide. Say yes together and identities unlock. No pressure, full consent.</p>
+        <h3>Reveal, meet, or just stay connected</h3>
+        <p>After day 7 — reveal together, get a real world meetup suggestion, or add each other to your Circle. The relationship doesn't have to end because the window did.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TRUST & VERIFICATION ===== -->
+<section id="trust">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">Verified humans only</span>
+      <h2>Every person here is real</h2>
+      <p>Anonymous to your match. Never anonymous to us. Every Veil user is verified with a government ID and random liveness checks. Your identity stays hidden from your match — but bots, scammers, and fake profiles are eliminated before they ever reach you.</p>
+    </div>
+    <div class="trust-grid">
+      <div class="trust-pill glass reveal">
+        <div class="tp-ic">🪪</div>
+        <div><h4>Govt ID Verified</h4><p>Aadhaar or passport level verification.</p></div>
+      </div>
+      <div class="trust-pill glass reveal d1">
+        <div class="tp-ic">📸</div>
+        <div><h4>Liveness Checked</h4><p>Random selfie checks prevent bots and account sharing.</p></div>
+      </div>
+      <div class="trust-pill glass reveal d2">
+        <div class="tp-ic">🔐</div>
+        <div><h4>End-to-End Encrypted</h4><p>We relay your messages. We never read them.</p></div>
+      </div>
+      <div class="trust-pill glass reveal d3">
+        <div class="tp-ic">🛡️</div>
+        <div><h4>Evidence Escrow</h4><p>Harassment proof stored encrypted — accessible only if you report.</p></div>
       </div>
     </div>
   </div>
@@ -630,6 +738,53 @@
         <p>Switch your intent whenever your goals change — every match starts fresh and perfectly aligned.</p>
         <a href="#waitlist" class="btn btn-ghost" style="margin-top:20px">Pick your intent</a>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== YOUR CIRCLE ===== -->
+<section id="circle">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">The social graph</span>
+      <h2>One match is just the beginning</h2>
+      <p>When a 7-day window ends, the relationship doesn't have to. Add people to your Circle — people you connected with but weren't the right match for right now. Over time your Circle becomes your most trusted social graph. Built on real conversations, not follows.</p>
+    </div>
+
+    <div class="circle-graph reveal d1">
+      <svg class="links" viewBox="0 0 560 470" preserveAspectRatio="xMidYMid meet">
+        <line class="cline pink"   x1="280" y1="235" x2="280" y2="52"  style="animation-delay:0s"/>
+        <line class="cline cyan"   x1="280" y1="235" x2="488" y2="122" style="animation-delay:.4s"/>
+        <line class="cline purple" x1="280" y1="235" x2="498" y2="312" style="animation-delay:.8s"/>
+        <line class="cline pink"   x1="280" y1="235" x2="362" y2="420" style="animation-delay:1.2s"/>
+        <line class="cline cyan"   x1="280" y1="235" x2="198" y2="420" style="animation-delay:1.6s"/>
+        <line class="cline purple" x1="280" y1="235" x2="62"  y2="312" style="animation-delay:2s"/>
+        <line class="cline cyan"   x1="280" y1="235" x2="72"  y2="122" style="animation-delay:2.4s"/>
+      </svg>
+
+      <span class="cnode center" style="left:280px;top:235px">✦</span>
+
+      <span class="cnode pink" style="left:280px;top:52px">👩
+        <span class="ct-tip">Met via Veil — a <b>Day 6 reveal</b> we both said yes to.</span>
+      </span>
+      <span class="cnode cyan" style="left:488px;top:122px">🧑
+        <span class="ct-tip">Met via Veil — <b>Day 4 conversation</b> sparked a friendship.</span>
+      </span>
+      <span class="cnode purple" style="left:498px;top:312px">🧑‍💼
+        <span class="ct-tip">Met via Veil — a 7-day chat turned into a <b>co-founder call</b>.</span>
+      </span>
+      <span class="cnode pink" style="left:362px;top:420px">🧑‍🎨
+        <span class="ct-tip">Met via Veil — <b>Day 5</b> we realised we couldn't stop talking.</span>
+      </span>
+      <span class="cnode cyan" style="left:198px;top:420px">🧑‍🚀
+        <span class="ct-tip">Met via Veil — <b>Day 4 conversation</b> sparked a friendship.</span>
+      </span>
+      <span class="cnode purple" style="left:62px;top:312px">👨
+        <span class="ct-tip">Met via Veil — became my go-to <b>mentor</b> after the window closed.</span>
+      </span>
+      <span class="cnode cyan" style="left:72px;top:122px">🧕
+        <span class="ct-tip">Met via Veil — <b>travel plans</b> that turned into a real friendship.</span>
+      </span>
     </div>
   </div>
 </section>
@@ -727,6 +882,92 @@
         <div class="qmark">???</div>
         <div class="state">Waiting for your move…</div>
         <div class="substate">Will reveal when you do</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== THE OFFLINE MOMENT ===== -->
+<section id="offline">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">Real world connection</span>
+      <h2>We don't stop at the reveal</h2>
+      <p>After a successful reveal, Veil suggests your first real meetup — curated to both your interests. A rooftop café if you both love sunsets. A bookstore if you bonded over books. A trail if you're both hikers. The app that brought you together also helps you take the first step in the real world.</p>
+    </div>
+    <div class="meet-grid">
+      <div class="meet-card glass reveal">
+        <span class="emoji">☕</span>
+        <h3>Rooftop café in Hauz Khas</h3>
+        <p>For two people who talked about sunsets on Day 3.</p>
+      </div>
+      <div class="meet-card glass reveal d1">
+        <span class="emoji">📚</span>
+        <h3>Secondhand bookstore crawl, Daryaganj</h3>
+        <p>For two people who argued about fiction vs nonfiction.</p>
+      </div>
+      <div class="meet-card glass reveal d2">
+        <span class="emoji">🥾</span>
+        <h3>Sunrise hike, Aravalli trails</h3>
+        <p>For two people who said they never wake up early but always want to.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== GRACEFUL ENDINGS ===== -->
+<section id="rematch">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">Graceful endings</span>
+      <h2>Even a miss teaches you something</h2>
+      <p>Not every 7-day window ends in a connection. That's okay. Veil doesn't let it end in silence. You get a reflection — a gentle AI insight on what your conversation patterns say about the kind of connection you're actually looking for. Then a better calibrated rematch.</p>
+    </div>
+    <div class="rematch-split">
+      <div class="rematch-side glass reveal">
+        <div class="fade-chat">
+          <div class="bubble them">I think we see the world pretty differently, huh?</div>
+          <div class="bubble me">Yeah… maybe that's okay though.</div>
+          <div class="bubble them">It was really nice talking to you this week.</div>
+        </div>
+        <div class="window-ended">Your 7-day window has ended</div>
+      </div>
+      <div class="rematch-side insight-side glass reveal d1">
+        <div class="insight-card">
+          <div class="insight-label">A gentle reflection</div>
+          <div class="ins-text">You open up more when asked about <b>experiences</b> than opinions. Your next match will lead with storytelling prompts.</div>
+          <a href="#waitlist" class="btn btn-primary">Find my next match
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ANONYMOUS STORIES ===== -->
+<section id="stories">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">Veil stories</span>
+      <h2>Real stories. No names. No photos.</h2>
+      <p>After every reveal, we ask if you want to share your story — anonymously. No names. No photos. Just the moment. These stories are what bring the next person to Veil.</p>
+    </div>
+    <div class="stories-grid">
+      <div class="story-card glass reveal">
+        <span class="story-badge">💞 Dating</span>
+        <p class="story-quote">"We argued about Murakami on Day 3. By Day 6 I knew I wanted to argue with her about everything forever."</p>
+        <div class="story-loc"><span class="pindot"></span> Day 7 reveal — Delhi</div>
+      </div>
+      <div class="story-card glass reveal d1">
+        <span class="story-badge">🤝 Friendship</span>
+        <p class="story-quote">"I was looking for a travel partner. I found a best friend I talk to every day."</p>
+        <div class="story-loc"><span class="pindot"></span> Day 7 reveal — Bangalore</div>
+      </div>
+      <div class="story-card glass reveal d2">
+        <span class="story-badge">✈️ Travel</span>
+        <p class="story-quote">"We were both solo travelling Spiti in October. We didn't plan it. Veil did."</p>
+        <div class="story-loc"><span class="pindot"></span> Day 7 reveal — Manali</div>
       </div>
     </div>
   </div>
