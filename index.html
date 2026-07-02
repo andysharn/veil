@@ -30,7 +30,7 @@
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  html { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; overflow-x: hidden; }
 
   body {
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -131,7 +131,28 @@
   .nav-links a { color: var(--text-dim); font-size: 0.94rem; font-weight: 500; transition: color .2s; }
   .nav-links a:hover { color: var(--text); }
   .nav-cta { display: flex; align-items: center; gap: 14px; }
-  .menu-toggle { display: none; background: none; border: none; color: var(--text); cursor: pointer; }
+  .menu-toggle {
+    display: none; background: var(--surface); border: 1px solid var(--border-strong);
+    color: var(--text); cursor: pointer; width: 44px; height: 44px; border-radius: 12px;
+    place-items: center; backdrop-filter: blur(10px);
+  }
+
+  /* Mobile dropdown menu */
+  .mobile-menu {
+    display: none; position: fixed; top: 72px; left: 0; right: 0; z-index: 99;
+    background: rgba(7,6,15,0.96); backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px 24px;
+    transform: translateY(-12px); opacity: 0; pointer-events: none;
+    transition: transform .3s var(--ease), opacity .3s var(--ease);
+  }
+  .mobile-menu.open { transform: translateY(0); opacity: 1; pointer-events: auto; }
+  .mobile-menu a {
+    display: block; padding: 14px 6px; color: var(--text-dim); font-size: 1.05rem;
+    font-weight: 500; border-bottom: 1px solid var(--border);
+  }
+  .mobile-menu a:last-of-type { border-bottom: none; }
+  .mobile-menu .btn { width: 100%; justify-content: center; margin-top: 16px; }
 
   .pill {
     display: inline-flex; align-items: center; gap: 9px;
@@ -147,6 +168,7 @@
   .hero { position: relative; padding: 120px 0 110px; text-align: center; }
 
   /* Orbit constellation visual */
+  .hero-shell { display: flex; justify-content: center; }
   .hero-visual {
     position: relative; width: 100%; max-width: 620px;
     height: 540px; margin: 0 auto 6px;
@@ -412,6 +434,7 @@
     background: rgba(45,212,191,0.1); border: 1px solid rgba(45,212,191,0.35); color: var(--teal); font-weight: 500;
   }
   .success-msg.show { display: block; animation: ibIn .4s var(--ease); }
+  .success-msg.error { background: rgba(236,72,153,0.1); border-color: rgba(236,72,153,0.4); color: #f9a8d4; }
 
   .intent-chips { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 30px; }
   .intent-chips .ic {
@@ -442,6 +465,7 @@
   .trust-pill p { color: var(--text-dim); font-size: 0.92rem; }
 
   /* ---------- Your Circle (social graph) ---------- */
+  .circle-shell { display: flex; justify-content: center; }
   .circle-graph { position: relative; width: 100%; max-width: 560px; height: 470px; margin: 0 auto; }
   .circle-graph .links { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
   .cline { stroke-width: 2; fill: none; stroke-linecap: round; animation: lineGlow 3s ease-in-out infinite; }
@@ -513,6 +537,13 @@
   .reveal.d3 { transition-delay: .24s; }
 
   /* ---------- Responsive ---------- */
+  /* Fluid spacing so desktop padding doesn't crowd small screens */
+  section { padding: clamp(56px, 9vw, 100px) 0; }
+  .sec-head { margin-bottom: clamp(36px, 6vw, 60px); }
+
+  @media (max-width: 1024px) {
+    .meet-grid, .stories-grid { grid-template-columns: repeat(2, 1fr); }
+  }
   @media (max-width: 940px) {
     .steps { grid-template-columns: 1fr 1fr; }
     .step .arrow { display: none; }
@@ -525,23 +556,59 @@
     .rematch-split { grid-template-columns: 1fr; }
     .meet-grid, .stories-grid { grid-template-columns: 1fr; }
     .nav-links { display: none; }
-    .menu-toggle { display: grid; place-items: center; }
+    .menu-toggle { display: grid; }
+    .nav-cta .btn-ghost, .nav-cta .btn-primary { display: none; }
+    .mobile-menu { display: block; }
   }
   @media (max-width: 760px) {
-    .hero-visual { transform: scale(0.82); margin-bottom: -40px; }
-    .circle-graph { transform: scale(0.84); }
+    /* Keep the visuals at their native canvas size so node coordinates stay valid,
+       then scale down. The shell centers them and clips overflow so the page never widens. */
+    .hero-shell { overflow: hidden; height: 420px; }
+    .hero-visual {
+      width: 620px; height: 540px; max-width: none; flex: none; margin: 0;
+      transform: scale(0.74); transform-origin: top center;
+    }
+    .circle-shell { overflow: hidden; height: 380px; }
+    .circle-graph {
+      width: 560px; height: 470px; max-width: none; flex: none; margin: 0;
+      transform: scale(0.74); transform-origin: top center;
+    }
+    .foot-grid { flex-direction: column; gap: 32px; }
+    .foot-cols { gap: 40px; }
   }
   @media (max-width: 600px) {
+    .wrap { padding: 0 18px; }
     .steps, .types-grid, .safety-grid { grid-template-columns: 1fr; }
     .trust-grid { grid-template-columns: 1fr; }
-    .hero { padding: 110px 0 80px; }
-    .hero-visual { transform: scale(0.62); height: 480px; margin: -30px auto -70px; }
-    .circle-graph { transform: scale(0.6); height: 320px; margin: -40px auto; }
+    .hero { padding: 110px 0 70px; }
+    .hero-shell { height: 300px; }
+    .hero-visual { transform: scale(0.52); }
+    .circle-shell { height: 300px; }
+    .circle-graph { transform: scale(0.56); }
     .signup-form { flex-direction: column; }
     .signup-form .btn { justify-content: center; }
     .feature-block { padding: 28px; }
-    .waitlist-card { padding: 44px 24px; }
-    .nav-cta .btn-ghost { display: none; }
+    .waitlist-card { padding: 44px 22px; }
+    .btn { padding: 13px 22px; }
+    .foot-bottom { flex-direction: column; align-items: flex-start; }
+  }
+  @media (max-width: 380px) {
+    .hero-shell { height: 270px; }
+    .hero-visual { transform: scale(0.46); }
+    .circle-shell { height: 280px; }
+    .circle-graph { transform: scale(0.5); }
+    .ib-card { padding: 30px 20px; }
+    .reveal-card { padding: 30px 22px 26px; }
+  }
+
+  /* Respect users who prefer less motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 </style>
 </head>
@@ -569,15 +636,27 @@
       <div class="nav-cta">
         <a href="#waitlist" class="btn btn-ghost">Sign in</a>
         <a href="#waitlist" class="btn btn-primary">Join waitlist</a>
+        <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
       </div>
     </nav>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#how">How it works</a>
+    <a href="#types">Connection types</a>
+    <a href="#icebreakers">Icebreakers</a>
+    <a href="#safety">Safety</a>
+    <a href="#why">Why Veil</a>
+    <a href="#waitlist" class="btn btn-primary">Join waitlist</a>
   </div>
 </header>
 
 <!-- ===== HERO ===== -->
 <section class="hero">
   <div class="wrap">
-    <div class="hero-visual reveal">
+    <div class="hero-shell reveal">
+    <div class="hero-visual">
       <div class="orbit">
         <span class="ring r1"></span>
         <span class="ring r2"></span>
@@ -606,6 +685,7 @@
         <!-- center orb -->
         <span class="orb"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c.45 4.7 2.6 6.85 7.3 7.3-4.7.45-6.85 2.6-7.3 7.3-.45-4.7-2.6-6.85-7.3-7.3 4.7-.45 6.85-2.6 7.3-7.3z"/></svg></span>
       </div>
+    </div>
     </div>
 
     <h1 class="reveal d1">Real connections.<br/>No pretense. <span class="grad-rush">No rush.</span></h1>
@@ -751,7 +831,8 @@
       <p>When a 7-day window ends, the relationship doesn't have to. Add people to your Circle — people you connected with but weren't the right match for right now. Over time your Circle becomes your most trusted social graph. Built on real conversations, not follows.</p>
     </div>
 
-    <div class="circle-graph reveal d1">
+    <div class="circle-shell reveal d1">
+    <div class="circle-graph">
       <svg class="links" viewBox="0 0 560 470" preserveAspectRatio="xMidYMid meet">
         <line class="cline pink"   x1="280" y1="235" x2="280" y2="52"  style="animation-delay:0s"/>
         <line class="cline cyan"   x1="280" y1="235" x2="488" y2="122" style="animation-delay:.4s"/>
@@ -785,6 +866,7 @@
       <span class="cnode cyan" style="left:72px;top:122px">🧕
         <span class="ct-tip">Met via Veil — <b>travel plans</b> that turned into a real friendship.</span>
       </span>
+    </div>
     </div>
   </div>
 </section>
@@ -1168,6 +1250,21 @@
     header.classList.toggle('scrolled', window.scrollY > 20);
   });
 
+  // ===== Mobile menu =====
+  const menuToggle = document.getElementById('menuToggle');
+  const mobileMenu = document.getElementById('mobileMenu');
+  function setMenu(open) {
+    mobileMenu.classList.toggle('open', open);
+    menuToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    menuToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  }
+  menuToggle.addEventListener('click', () => {
+    setMenu(!mobileMenu.classList.contains('open'));
+  });
+  mobileMenu.querySelectorAll('a').forEach((a) => {
+    a.addEventListener('click', () => setMenu(false));
+  });
+
   // ===== Scroll reveal =====
   const io = new IntersectionObserver((entries) => {
     entries.forEach((e) => {
@@ -1245,15 +1342,63 @@
   // ===== Waitlist form =====
   const form = document.getElementById('signupForm');
   const success = document.getElementById('successMsg');
-  form.addEventListener('submit', (e) => {
+  const formNote = document.querySelector('.form-note');
+  const submitBtn = form.querySelector('button[type="submit"]');
+
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const email = document.getElementById('emailInput').value;
+    const email = document.getElementById('emailInput').value.trim();
     const intent = document.querySelector('#intentChips .ic.sel').textContent;
-    form.style.display = 'none';
-    document.querySelector('.form-note').style.display = 'none';
-    success.classList.add('show');
-    success.innerHTML = "You're on the list! We'll reach out to <b>" + email + "</b> when your <b>" + intent + "</b> spot opens. 🎉";
+    if (!email) return;
+
+    const originalLabel = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Joining…';
+
+    try {
+      // saveWaitlist is defined in the Firebase module below
+      if (typeof window.saveWaitlist !== 'function') {
+        throw new Error('Firebase not ready yet');
+      }
+      await window.saveWaitlist({ email, intent, source: 'veil-landing' });
+
+      form.style.display = 'none';
+      formNote.style.display = 'none';
+      success.classList.remove('error');
+      success.classList.add('show');
+      success.innerHTML = "You're on the list! We'll reach out to <b>" + email +
+        "</b> when your <b>" + intent + "</b> spot opens. 🎉";
+    } catch (err) {
+      console.error('Waitlist submit failed:', err);
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalLabel;
+      success.classList.add('show', 'error');
+      success.textContent = "Something went wrong — please try again in a moment.";
+    }
   });
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBZwmozxwRvJ0meb3_xDh_EedK4S_VmVn0",
+    authDomain: "veil-2b9ab.firebaseapp.com",
+    projectId: "veil-2b9ab",
+    storageBucket: "veil-2b9ab.firebasestorage.app",
+    messagingSenderId: "181522159424",
+    appId: "1:181522159424:web:91d9293a85d0fcfd474ca5",
+    measurementId: "G-8KZVQ5TXCS"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Called by the form handler above. Writes one doc to the "waitlist" collection.
+  window.saveWaitlist = (data) =>
+    addDoc(collection(db, "waitlist"), { ...data, createdAt: serverTimestamp() });
 </script>
 </body>
 </html>
